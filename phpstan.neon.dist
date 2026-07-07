@@ -1,0 +1,35 @@
+includes:
+    # larastan, phpstan-strict-rules, phpstan-deprecation-rules and
+    # tomasvotruba/type-coverage are auto-registered by phpstan/extension-installer.
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    paths:
+        - src
+    level: max
+    reportUnmatchedIgnoredErrors: true
+    treatPhpDocTypesAsCertain: true
+    checkUninitializedProperties: true
+    checkBenevolentUnionTypes: true
+    parallel:
+        maximumNumberOfProcesses: 16
+    type_coverage:
+        declare: 100
+        return_type: 100
+        param_type: 100
+        property_type: 100
+        constant_type: 100
+    ignoreErrors:
+        # Eloquent's fluent builder methods (where/orderBy/...) are declared
+        # static in Larastan's stubs and reach instances through __call. The
+        # dynamic instance calls are the intended Eloquent usage.
+        -
+            identifier: staticMethod.dynamicCall
+            message: '#Dynamic call to static method Illuminate\\Database\\Eloquent\\Builder#'
+        # HasContentBlocks is public API consumed by host applications; the
+        # package itself never uses it (only the test fixtures do).
+        -
+            identifier: trait.unused
+            path: src/Models/Concerns/HasContentBlocks.php
+    excludePaths:
+        - vendor/*

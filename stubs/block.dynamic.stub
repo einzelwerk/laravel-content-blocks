@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Blocks;
+
+use Ewk\ContentBlocks\Blocks\AbstractBlock;
+use Ewk\ContentBlocks\Models\ContentBlock;
+use Illuminate\Http\Request;
+use MoonShine\UI\Fields\Number;
+
+/**
+ * Dynamic block: the payload is computed at render time from application
+ * data. Blocks are resolved through the container, so inject any query or
+ * use-case you need via the constructor. Content fields hold the block
+ * settings (limits, filters), not the data itself.
+ */
+final class {{ class }} extends AbstractBlock
+{
+    public function __construct(
+        // private readonly ListProductsQuery $products,
+    ) {}
+
+    public static function code(): string
+    {
+        return '{{ code }}';
+    }
+
+    public function title(): string
+    {
+        return '{{ title }}';
+    }
+
+    public function fields(): array
+    {
+        return [
+            Number::make('Limit', 'limit')
+                ->min(1)
+                ->default(10),
+        ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ];
+    }
+
+    public function data(ContentBlock $block, Request $request): array
+    {
+        $content = $this->content($block);
+        $limit = (int) ($content['limit'] ?? 10);
+
+        return [
+            'limit' => $limit,
+            // 'items' => $this->products->list(limit: $limit),
+            'items' => [],
+        ];
+    }
+}

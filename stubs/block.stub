@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Blocks;
+
+use Ewk\ContentBlocks\Blocks\AbstractBlock;
+use Ewk\ContentBlocks\Models\ContentBlock;
+use Illuminate\Http\Request;
+use MoonShine\UI\Fields\Text;
+
+final class {{ class }} extends AbstractBlock
+{
+    public static function code(): string
+    {
+        return '{{ code }}';
+    }
+
+    public function title(): string
+    {
+        return '{{ title }}';
+    }
+
+    public function fields(): array
+    {
+        return [
+            Text::make('Heading', 'heading')->required(),
+        ];
+    }
+
+    public function rules(): array
+    {
+        return [
+            'heading' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    public function data(ContentBlock $block, Request $request): array
+    {
+        $content = $this->content($block);
+
+        return [
+            'heading' => $content['heading'] ?? null,
+        ];
+    }
+}

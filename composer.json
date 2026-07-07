@@ -1,0 +1,92 @@
+{
+  "name": "ewk/laravel-content-blocks",
+  "description": "Polymorphic content blocks for Laravel with a MoonShine 4 admin: block registry, renderer, and per-type admin fields.",
+  "type": "library",
+  "keywords": [
+    "laravel",
+    "moonshine",
+    "content-blocks",
+    "page-builder",
+    "blocks",
+    "cms"
+  ],
+  "homepage": "https://github.com/einzelwerk/laravel-content-blocks",
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/einzelwerk/laravel-content-blocks/issues",
+    "source": "https://github.com/einzelwerk/laravel-content-blocks"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ewk\\ContentBlocks\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Ewk\\ContentBlocks\\Tests\\": "tests/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Dimitrienko Vadim",
+      "email": "vd@ewk.agency"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "laravel/framework": "^12",
+    "moonshine/moonshine": "^4.15",
+    "ewk/moonshine-resource-kit": "dev-main"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.65",
+    "larastan/larastan": "^3",
+    "mockery/mockery": "^1.6",
+    "orchestra/testbench": "^10",
+    "pestphp/pest": "^3",
+    "pestphp/pest-plugin-arch": "^3",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan": "^2",
+    "phpstan/phpstan-deprecation-rules": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "phpunit/phpunit": "^11|^12",
+    "tomasvotruba/type-coverage": "^2.2"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Ewk\\ContentBlocks\\Providers\\ContentBlocksServiceProvider"
+      ]
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "minimum-stability": "stable",
+  "scripts": {
+    "test:arch": "vendor/bin/pest --testsuite=Architecture",
+    "test:unit": "vendor/bin/phpunit --testsuite=Unit",
+    "test:feature": "vendor/bin/phpunit --testsuite=Feature",
+    "test": [
+      "@test:arch",
+      "@test:unit",
+      "@test:feature"
+    ],
+    "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
+    "format:dry": "vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run --diff",
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../moonshine-resource-kit",
+      "options": {
+        "symlink": true
+      }
+    }
+  ]
+}
