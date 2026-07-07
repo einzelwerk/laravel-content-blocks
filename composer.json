@@ -36,7 +36,7 @@
     "php": ">=8.3",
     "laravel/framework": "^12",
     "moonshine/moonshine": "^4.15",
-    "ewk/moonshine-resource-kit": "dev-main"
+    "ewk/moonshine-resource-kit": "^0.1"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.65",
@@ -79,14 +79,5 @@
     "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
     "format:dry": "vendor/bin/php-cs-fixer fix --allow-risky=yes --dry-run --diff",
     "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G"
-  },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../moonshine-resource-kit",
-      "options": {
-        "symlink": true
-      }
-    }
-  ]
+  }
 }
