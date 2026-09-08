@@ -31,6 +31,28 @@ final class HasContentBlocksTest extends TestCase
     }
 
     #[Test]
+    public function nestedContentKeysCanBeSetThroughDataSet(): void
+    {
+        $page = Page::query()->create(['title' => 'Home']);
+
+        $block = $page->contentBlocks()->create([
+            'type' => 'hero',
+            'name' => 'Main hero',
+            'content' => ['heading' => 'Welcome'],
+        ]);
+
+        // MoonShine applies form fields through data_set() on the model.
+        data_set($block, 'content.heading', 'Changed');
+        data_set($block, 'content.body.en', 'Hello');
+        $block->save();
+
+        self::assertSame(
+            ['heading' => 'Changed', 'body' => ['en' => 'Hello']],
+            $block->fresh()?->contentData(),
+        );
+    }
+
+    #[Test]
     public function contentDataFallsBackToEmptyArray(): void
     {
         $page = Page::query()->create(['title' => 'Home']);

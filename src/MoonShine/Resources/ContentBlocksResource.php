@@ -12,6 +12,7 @@ use Ewk\ContentBlocks\MoonShine\Pages\ContentBlockIndexPage;
 use Ewk\ContentBlocks\Support\BlockContentFilter;
 use Ewk\MoonShineResourceKit\MoonShine\Concerns\WithActivatable;
 use Ewk\MoonShineResourceKit\MoonShine\Concerns\WithReorderable;
+use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Contracts\Translation\Translator;
 use MoonShine\Contracts\Core\DependencyInjection\CoreContract;
 use MoonShine\Contracts\Core\PageContract;
@@ -102,7 +103,7 @@ final class ContentBlocksResource extends ModelResource
         }
 
         /** @var array<string, mixed> $content */
-        $model->content = $this->contentFilter->filter($block, $content);
+        $model->content = new ArrayObject($this->contentFilter->filter($block, $content));
 
         return $item;
     }

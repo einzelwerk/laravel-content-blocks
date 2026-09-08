@@ -6,6 +6,8 @@ namespace Ewk\ContentBlocks\Models;
 
 use Ewk\MoonShineResourceKit\Concerns\Activatable;
 use Ewk\MoonShineResourceKit\Concerns\Sortable;
+use Illuminate\Database\Eloquent\Casts\ArrayObject;
+use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
@@ -19,16 +21,21 @@ use Illuminate\Support\Carbon;
  * sequence is dense and partitioned per blockable owner, so drag & drop
  * reordering in the admin never leaks across owners.
  *
- * @property int                   $id
- * @property string                $blockable_type
- * @property int                   $blockable_id
- * @property string                $type
- * @property string                $name
- * @property ?array<string, mixed> $content
- * @property int                   $sort_order
- * @property bool                  $is_active
- * @property ?Carbon               $created_at
- * @property ?Carbon               $updated_at
+ * The content is cast to an ArrayObject on purpose: the admin form writes
+ * nested keys through `data_set($model, 'content.heading', ...)`, which
+ * needs a by-reference target — a plain array cast would throw "Indirect
+ * modification of overloaded element".
+ *
+ * @property int                         $id
+ * @property string                      $blockable_type
+ * @property int                         $blockable_id
+ * @property string                      $type
+ * @property string                      $name
+ * @property ?ArrayObject<string, mixed> $content
+ * @property int                         $sort_order
+ * @property bool                        $is_active
+ * @property ?Carbon                     $created_at
+ * @property ?Carbon                     $updated_at
  */
 class ContentBlock extends Model
 {
@@ -53,7 +60,7 @@ class ContentBlock extends Model
     protected function casts(): array
     {
         return [
-            'content' => 'array',
+            'content' => AsArrayObject::class,
             'sort_order' => 'integer',
         ];
     }
@@ -83,7 +90,8 @@ class ContentBlock extends Model
      */
     public function contentData(): array
     {
-        return $this->content ?? [];
+        /** @var array<string, mixed> */
+        return $this->content?->getArrayCopy() ?? [];
     }
 
 }

@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 проект придерживается [семантического версионирования](https://semver.org/lang/ru/).
 
+## [0.2.1] — 2026-09-08
+
+### Исправлено
+
+- **Сохранение блока из админки.** Колонка `content` теперь кастуется в `AsArrayObject`: форма MoonShine пишет вложенные ключи через `data_set($model, 'content.heading', ...)`, и с обычным `array`-кастом сохранение падало с «Indirect modification of overloaded element». `contentData()` по-прежнему отдаёт обычный массив.
+
 ## [0.2.0] — 2026-09-08
 
 ### Добавлено
@@ -39,5 +45,6 @@
 - MoonShine ^4.15
 - ewk/moonshine-resource-kit ^0.1
 
+[0.2.1]: https://github.com/einzelwerk/laravel-content-blocks/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/einzelwerk/laravel-content-blocks/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/einzelwerk/laravel-content-blocks/releases/tag/v0.1.0
