@@ -21,12 +21,14 @@ final readonly class BlockContentFilter
      */
     public function filter(BlockContract $block, array $content): array
     {
-        $columns = [];
+        $keys = [];
 
         foreach ($block->fields() as $field) {
-            $columns[$field->getColumn()] = true;
+            // A dotted column (`body.ru`) lives under its root key of the
+            // content array — that root is what the block owns.
+            $keys[explode('.', $field->getColumn(), 2)[0]] = true;
         }
 
-        return array_intersect_key($content, $columns);
+        return array_intersect_key($content, $keys);
     }
 }

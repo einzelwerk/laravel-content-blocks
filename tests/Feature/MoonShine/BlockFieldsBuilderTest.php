@@ -9,9 +9,11 @@ use Ewk\ContentBlocks\Contracts\BlockRegistryInterface;
 use Ewk\ContentBlocks\Models\ContentBlock;
 use Ewk\ContentBlocks\Tests\Fixtures\Blocks\FeaturedItemsBlock;
 use Ewk\ContentBlocks\Tests\Fixtures\Blocks\HeroBlock;
+use Ewk\ContentBlocks\Tests\Fixtures\Blocks\LocalizedTextBlock;
 use Ewk\ContentBlocks\Tests\Fixtures\Support\FakeItemsProvider;
 use Ewk\ContentBlocks\Tests\Fixtures\Support\ItemsProviderInterface;
 use Ewk\ContentBlocks\Tests\Support\TestCase;
+use Illuminate\Http\Request;
 use MoonShine\Contracts\UI\FieldContract;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -28,6 +30,7 @@ final class BlockFieldsBuilderTest extends TestCase
         $registry = $this->app->make(BlockRegistryInterface::class);
         $registry->register(HeroBlock::class);
         $registry->register(FeaturedItemsBlock::class);
+        $registry->register(LocalizedTextBlock::class);
 
         $this->builder = $this->app->make(BlockFieldsBuilderInterface::class);
     }
@@ -43,7 +46,14 @@ final class BlockFieldsBuilderTest extends TestCase
         );
 
         self::assertSame(
-            ['content.heading', 'content.media_type', 'content.video_url', 'content.limit'],
+            [
+                'content.heading',
+                'content.media_type',
+                'content.video_url',
+                'content.limit',
+                'content.body.en',
+                'content.body.de',
+            ],
             $columns,
         );
 
@@ -72,6 +82,41 @@ final class BlockFieldsBuilderTest extends TestCase
         self::assertSame('Welcome', $byColumn['content.heading']->toValue());
         // `limit` belongs to featured_items — the hero content must not leak into it.
         self::assertNotSame(99, $byColumn['content.limit']->toValue());
+    }
+
+    #[Test]
+    public function appliesNestedValuesThroughDottedColumns(): void
+    {
+        $block = new ContentBlock([
+            'type' => 'localized_text',
+            'name' => 'Intro',
+            'content' => ['body' => ['en' => 'Hello', 'de' => 'Hallo']],
+        ]);
+
+        $byColumn = [];
+
+        foreach ($this->builder->build($block) as $field) {
+            $byColumn[$field->getColumn()] = $field;
+        }
+
+        self::assertSame('Hello', $byColumn['content.body.en']->toValue());
+        self::assertSame('Hallo', $byColumn['content.body.de']->toValue());
+    }
+
+    #[Test]
+    public function onlyFieldsOfTheSubmittedTypeCanApply(): void
+    {
+        $this->app->instance('request', Request::create('/', 'POST', ['type' => 'hero']));
+
+        $byColumn = [];
+
+        foreach ($this->builder->build() as $field) {
+            $byColumn[$field->getColumn()] = $field;
+        }
+
+        self::assertTrue($byColumn['content.heading']->isCanApply());
+        self::assertFalse($byColumn['content.limit']->isCanApply());
+        self::assertFalse($byColumn['content.body.en']->isCanApply());
     }
 
     #[Test]

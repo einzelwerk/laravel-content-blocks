@@ -7,6 +7,9 @@ namespace Ewk\ContentBlocks\MoonShine;
 use Ewk\ContentBlocks\Contracts\BlockFieldsBuilderInterface;
 use Ewk\ContentBlocks\Contracts\BlockRegistryInterface;
 use Ewk\ContentBlocks\Models\ContentBlock;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 final readonly class BlockFieldsBuilder implements BlockFieldsBuilderInterface
 {
@@ -14,6 +17,7 @@ final readonly class BlockFieldsBuilder implements BlockFieldsBuilderInterface
 
     public function __construct(
         private BlockRegistryInterface $registry,
+        private Container $container,
     ) {}
 
     public function build(?ContentBlock $current = null): array
@@ -37,8 +41,13 @@ final readonly class BlockFieldsBuilder implements BlockFieldsBuilderInterface
                 $field->setColumn(self::CONTENT_PREFIX . $column);
                 $field->showWhen('type', $code);
 
-                if ($content !== null && \array_key_exists($column, $content)) {
-                    $field->setValue($content[$column]);
+                // The form submits the fields of every registered type at
+                // once; only the fields of the selected type may write into
+                // the content (or touch uploaded files) on save.
+                $field->canApply(fn(): bool => $this->submittedType() === $code);
+
+                if ($content !== null && Arr::has($content, $column)) {
+                    $field->setValue(Arr::get($content, $column));
                 }
 
                 $fields[] = $field;
@@ -63,5 +72,16 @@ final readonly class BlockFieldsBuilder implements BlockFieldsBuilderInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * Resolved lazily per call: the builder is a singleton, so it must not
+     * hold on to a request instance (long-running workers such as Octane).
+     */
+    private function submittedType(): ?string
+    {
+        $type = $this->container->make(Request::class)->input('type');
+
+        return \is_string($type) ? $type : null;
     }
 }

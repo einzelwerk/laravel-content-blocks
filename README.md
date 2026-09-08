@@ -1,6 +1,6 @@
 # ewk/laravel-content-blocks
 
-Polymorphic content blocks for Laravel 12 with a MoonShine 4 admin: attach ordered, toggleable, JSON-backed blocks to any Eloquent model and render them as a structured API payload.
+Polymorphic content blocks for Laravel 12/13 with a MoonShine 4 admin: attach ordered, toggleable, JSON-backed blocks to any Eloquent model and render them as a structured API payload.
 
 - **Any owner** — blocks attach through a `blockable` morph relation: pages, products, categories, anything.
 - **Two kinds of blocks** — *static* (payload comes from the stored JSON content) and *dynamic* (payload is computed at render time through constructor-injected dependencies: product lists, collections, feeds).
@@ -123,6 +123,27 @@ Each rendered block is an envelope the frontend can dispatch on:
 ```
 
 Inactive blocks are skipped, order follows the drag & drop position, and rows whose type is no longer registered are skipped with an `UnknownBlockTypeEncountered` event.
+
+## Nested content keys
+
+Field columns may address nested keys of the content through dot notation — handy for per-locale editors:
+
+```php
+public function fields(): array
+{
+    return [
+        TinyMce::make('Body (EN)', 'body.en'),
+        TinyMce::make('Body (DE)', 'body.de'),
+    ];
+}
+
+public function rules(): array
+{
+    return ['body' => ['nullable', 'array'], 'body.*' => ['nullable', 'string']];
+}
+```
+
+The stored content is `{"body": {"en": "...", "de": "..."}}`; the root key (`body`) is what the block owns when the submitted payload is filtered.
 
 ## Dynamic blocks
 

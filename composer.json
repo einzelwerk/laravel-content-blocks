@@ -34,7 +34,7 @@
   ],
   "require": {
     "php": ">=8.3",
-    "laravel/framework": "^12",
+    "laravel/framework": "^12|^13",
     "moonshine/moonshine": "^4.15",
     "ewk/moonshine-resource-kit": "^0.1"
   },
@@ -42,7 +42,7 @@
     "friendsofphp/php-cs-fixer": "^3.65",
     "larastan/larastan": "^3",
     "mockery/mockery": "^1.6",
-    "orchestra/testbench": "^10",
+    "orchestra/testbench": "^10|^11",
     "pestphp/pest": "^3",
     "pestphp/pest-plugin-arch": "^3",
     "phpstan/extension-installer": "^1.4",
