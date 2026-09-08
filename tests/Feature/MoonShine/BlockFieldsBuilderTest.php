@@ -63,6 +63,28 @@ final class BlockFieldsBuilderTest extends TestCase
     }
 
     #[Test]
+    public function scopesTheShowWhenIdentityByType(): void
+    {
+        $identities = [];
+
+        foreach ($this->builder->build() as $field) {
+            $identities[] = $field->getAttribute('data-show-when-field');
+        }
+
+        self::assertSame(
+            [
+                'content.hero.heading',
+                'content.hero.media_type',
+                'content.hero.video_url',
+                'content.featured_items.limit',
+                'content.localized_text.body.en',
+                'content.localized_text.body.de',
+            ],
+            $identities,
+        );
+    }
+
+    #[Test]
     public function appliesCurrentValuesOnlyToTheEditedType(): void
     {
         $block = new ContentBlock([

@@ -41,6 +41,13 @@ final readonly class BlockFieldsBuilder implements BlockFieldsBuilderInterface
                 $field->setColumn(self::CONTENT_PREFIX . $column);
                 $field->showWhen('type', $code);
 
+                // MoonShine toggles fields by their input name; two types
+                // sharing a column (`title`) would collide, so each field
+                // gets a type-scoped identity for the show-when logic.
+                $field->customAttributes([
+                    'data-show-when-field' => self::CONTENT_PREFIX . $code . '.' . $column,
+                ]);
+
                 // The form submits the fields of every registered type at
                 // once; only the fields of the selected type may write into
                 // the content (or touch uploaded files) on save.

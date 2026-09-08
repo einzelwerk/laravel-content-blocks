@@ -5,6 +5,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/),
 проект придерживается [семантического версионирования](https://semver.org/lang/ru/).
 
+## [0.2.2] — 2026-09-08
+
+### Исправлено
+
+- **Одинаковые колонки у разных типов.** MoonShine переключает видимость полей по имени инпута, поэтому поля разных блоков с одной колонкой (`title`) конфликтовали: поле чужого типа оставалось видимым, а его значение терялось. Каждое поле получает `data-show-when-field` вида `content.{code}.{column}`.
+
 ## [0.2.1] — 2026-09-08
 
 ### Исправлено
@@ -45,6 +51,7 @@
 - MoonShine ^4.15
 - ewk/moonshine-resource-kit ^0.1
 
+[0.2.2]: https://github.com/einzelwerk/laravel-content-blocks/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/einzelwerk/laravel-content-blocks/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/einzelwerk/laravel-content-blocks/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/einzelwerk/laravel-content-blocks/releases/tag/v0.1.0
