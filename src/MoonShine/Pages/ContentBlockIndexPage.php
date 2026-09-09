@@ -37,7 +37,7 @@ final class ContentBlockIndexPage extends IndexPage
      */
     protected function fields(): iterable
     {
-        $options = $this->registry->options();
+        $titles = $this->titles();
 
         return [
             SortHandle::make(),
@@ -48,12 +48,26 @@ final class ContentBlockIndexPage extends IndexPage
 
             Text::make($this->label('type'), 'type')
                 ->changePreview(static fn(mixed $value): string => \is_string($value)
-                    ? ($options[$value] ?? $value)
+                    ? ($titles[$value] ?? $value)
                     : '')
                 ->badge(),
 
             ActiveSwitcher::make($this->label('is_active')),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function titles(): array
+    {
+        $titles = [];
+
+        foreach (array_keys($this->registry->all()) as $code) {
+            $titles[$code] = $this->registry->make($code)?->title() ?? $code;
+        }
+
+        return $titles;
     }
 
     protected function reorderableWithHandle(): bool

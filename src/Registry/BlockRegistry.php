@@ -69,19 +69,92 @@ final class BlockRegistry implements BlockRegistryInterface
         return $this->blocks;
     }
 
+    public function availableFor(?string $scope): array
+    {
+        $available = [];
+
+        foreach ($this->instances() as $code => $block) {
+            if ($this->isAvailableFor($block, $scope)) {
+                $available[$code] = $this->blocks[$code];
+            }
+        }
+
+        return $available;
+    }
+
     public function options(): array
     {
+        return $this->optionsOf($this->instances());
+    }
+
+    public function optionsFor(?string $scope): array
+    {
+        $available = [];
+
+        foreach ($this->instances() as $code => $block) {
+            if ($this->isAvailableFor($block, $scope)) {
+                $available[$code] = $block;
+            }
+        }
+
+        return $this->optionsOf($available);
+    }
+
+    private function isAvailableFor(BlockContract $block, ?string $scope): bool
+    {
+        $scopes = $block->scopes();
+
+        if ($scopes === []) {
+            return true;
+        }
+
+        return $scope !== null && \in_array($scope, $scopes, true);
+    }
+
+    /**
+     * @param array<string, BlockContract> $blocks
+     *
+     * @return array<string, string|array<string, string>>
+     */
+    private function optionsOf(array $blocks): array
+    {
         $options = [];
+
+        foreach ($blocks as $code => $block) {
+            $category = $block->category();
+
+            if ($category === null) {
+                $options[$code] = $block->title();
+
+                continue;
+            }
+
+            $group = $options[$category] ?? [];
+            \assert(\is_array($group));
+
+            $group[$code] = $block->title();
+            $options[$category] = $group;
+        }
+
+        return $options;
+    }
+
+    /**
+     * @return array<string, BlockContract>
+     */
+    private function instances(): array
+    {
+        $instances = [];
 
         foreach (array_keys($this->blocks) as $code) {
             $block = $this->make($code);
 
             if ($block !== null) {
-                $options[$code] = $block->title();
+                $instances[$code] = $block;
             }
         }
 
-        return $options;
+        return $instances;
     }
 
     /**

@@ -17,13 +17,16 @@ use Stringable;
 interface BlockFieldsBuilderInterface
 {
     /**
-     * Fields of all registered blocks: columns prefixed with `content.`,
+     * Fields of the registered blocks: columns prefixed with `content.`,
      * visibility toggled by the `type` selector, current values applied
-     * from the edited block.
+     * from the edited block. `$codes` limits the built types (e.g. to the
+     * blocks the owner accepts); null builds every registered block.
+     *
+     * @param list<string>|null $codes
      *
      * @return list<FieldContract>
      */
-    public function build(?ContentBlock $current = null): array;
+    public function build(?ContentBlock $current = null, ?array $codes = null): array;
 
     /**
      * Validation rules of the block registered under `$code`, prefixed

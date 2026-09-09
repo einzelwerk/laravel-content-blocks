@@ -10,6 +10,7 @@ use Ewk\ContentBlocks\Registry\BlockRegistry;
 use Ewk\ContentBlocks\Tests\Fixtures\Blocks\ConflictingHeroBlock;
 use Ewk\ContentBlocks\Tests\Fixtures\Blocks\FeaturedItemsBlock;
 use Ewk\ContentBlocks\Tests\Fixtures\Blocks\HeroBlock;
+use Ewk\ContentBlocks\Tests\Fixtures\Blocks\TourScheduleBlock;
 use Ewk\ContentBlocks\Tests\Fixtures\Support\FakeItemsProvider;
 use Ewk\ContentBlocks\Tests\Fixtures\Support\ItemsProviderInterface;
 use Illuminate\Container\Container;
@@ -100,6 +101,44 @@ final class BlockRegistryTest extends TestCase
             ['hero' => 'Hero', 'featured_items' => 'Featured items'],
             $this->registry->options(),
         );
+    }
+
+    #[Test]
+    public function optionsNestCategorizedBlocksUnderTheirCategory(): void
+    {
+        $this->registry->register(HeroBlock::class);
+        $this->registry->register(TourScheduleBlock::class);
+        $this->registry->register(FeaturedItemsBlock::class);
+
+        self::assertSame(
+            [
+                'hero' => 'Hero',
+                'Tour' => ['tour_schedule' => 'Tour schedule'],
+                'featured_items' => 'Featured items',
+            ],
+            $this->registry->options(),
+        );
+    }
+
+    #[Test]
+    public function availableForMatchesBlockScopesAgainstTheOwnerScope(): void
+    {
+        $this->registry->register(HeroBlock::class);
+        $this->registry->register(TourScheduleBlock::class);
+
+        self::assertSame(
+            ['hero' => HeroBlock::class, 'tour_schedule' => TourScheduleBlock::class],
+            $this->registry->availableFor('tour'),
+        );
+        // unscoped blocks are offered to every owner, scoped ones only to a matching scope
+        self::assertSame(['hero' => HeroBlock::class], $this->registry->availableFor('page'));
+        self::assertSame(['hero' => HeroBlock::class], $this->registry->availableFor(null));
+
+        self::assertSame(
+            ['hero' => 'Hero', 'Tour' => ['tour_schedule' => 'Tour schedule']],
+            $this->registry->optionsFor('tour'),
+        );
+        self::assertSame(['hero' => 'Hero'], $this->registry->optionsFor(null));
     }
 
     #[Test]

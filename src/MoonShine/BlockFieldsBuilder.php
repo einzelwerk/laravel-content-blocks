@@ -20,11 +20,15 @@ final readonly class BlockFieldsBuilder implements BlockFieldsBuilderInterface
         private Container $container,
     ) {}
 
-    public function build(?ContentBlock $current = null): array
+    public function build(?ContentBlock $current = null, ?array $codes = null): array
     {
         $fields = [];
 
         foreach (array_keys($this->registry->all()) as $code) {
+            if ($codes !== null && ! \in_array($code, $codes, true)) {
+                continue;
+            }
+
             $block = $this->registry->make($code);
 
             if ($block === null) {

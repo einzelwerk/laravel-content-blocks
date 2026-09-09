@@ -31,6 +31,21 @@ interface BlockContract
     public function title(): string;
 
     /**
+     * Group the block is listed under in the admin type selector
+     * (rendered as an `<optgroup>`); null lists it ungrouped.
+     */
+    public function category(): ?string;
+
+    /**
+     * Owner scopes the block may be attached to — matched against
+     * {@see ScopedBlockOwnerContract::blockScope()} of the owning model.
+     * An empty list makes the block available to every owner.
+     *
+     * @return list<string>
+     */
+    public function scopes(): array;
+
+    /**
      * MoonShine fields editing the block content. Field columns are relative
      * to the block content root (`heading`, not `content.heading`) — the
      * package prefixes them when the admin form is built. For intra-block

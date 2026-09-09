@@ -6,7 +6,9 @@ namespace Ewk\ContentBlocks\MoonShine\Pages;
 
 use Ewk\ContentBlocks\Contracts\BlockFieldsBuilderInterface;
 use Ewk\ContentBlocks\Contracts\BlockRegistryInterface;
+use Ewk\ContentBlocks\Contracts\HasContentBlocksContract;
 use Ewk\ContentBlocks\Models\ContentBlock;
+use Ewk\ContentBlocks\Support\BlockOwnerResolver;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -26,7 +28,11 @@ use Stringable;
 
 /**
  * Form of a single content block: common columns, the type selector, and the
- * fields of every registered block toggled client-side by `showWhen`.
+ * fields of the blocks the owner accepts, toggled client-side by `showWhen`.
+ *
+ * The type selector lists the blocks available to the resolved owner
+ * ({@see BlockOwnerResolver}), grouped by category; when the owner cannot
+ * be determined every registered block is offered.
  *
  * The blockable owner is edited through a MorphTo field when
  * `content-blocks.moonshine.blockable_types` is configured; otherwise the
@@ -39,6 +45,7 @@ final class ContentBlockFormPage extends FormPage
         CoreContract $core,
         private readonly BlockRegistryInterface $registry,
         private readonly BlockFieldsBuilderInterface $fieldsBuilder,
+        private readonly BlockOwnerResolver $owners,
         private readonly Repository $config,
         private readonly Translator $translator,
     ) {
@@ -51,12 +58,13 @@ final class ContentBlockFormPage extends FormPage
     protected function fields(): iterable
     {
         $item = $this->currentItem();
+        $owner = $this->owners->resolve($item, $this->getCore()->getRequest());
 
         return [
             ...$this->blockableFields($item),
 
             Select::make($this->label('type'), 'type')
-                ->options($this->registry->options())
+                ->options($owner === null ? $this->registry->options() : $this->registry->optionsFor($this->owners->scope($owner)))
                 ->required()
                 ->native(),
 
@@ -64,7 +72,7 @@ final class ContentBlockFormPage extends FormPage
 
             Divider::make(),
 
-            ...$this->fieldsBuilder->build($item),
+            ...$this->fieldsBuilder->build($item, $owner === null ? null : array_keys($this->availableFor($owner))),
 
             Divider::make(),
 
@@ -78,8 +86,11 @@ final class ContentBlockFormPage extends FormPage
      */
     protected function rules(DataWrapperContract $item): array
     {
+        $owner = $this->owners->resolve($this->currentItem(), $this->getCore()->getRequest());
+        $codes = $owner === null ? $this->registry->all() : $this->availableFor($owner);
+
         $rules = [
-            'type' => ['required', 'string', Rule::in(array_keys($this->registry->all()))],
+            'type' => ['required', 'string', Rule::in(array_keys($codes))],
             'name' => ['required', 'string', 'max:255'],
         ];
 
@@ -90,6 +101,14 @@ final class ContentBlockFormPage extends FormPage
         }
 
         return $rules;
+    }
+
+    /**
+     * @return array<string, class-string>
+     */
+    private function availableFor(HasContentBlocksContract $owner): array
+    {
+        return $this->registry->availableFor($this->owners->scope($owner));
     }
 
     /**

@@ -40,6 +40,7 @@ abstract class TestCase extends Orchestra
         Schema::create('pages', static function (Blueprint $table): void {
             $table->id();
             $table->string('title');
+            $table->string('scope')->nullable();
             $table->timestamps();
         });
     }

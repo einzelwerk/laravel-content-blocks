@@ -45,12 +45,34 @@ interface BlockRegistryInterface
     public function make(string $code): ?BlockContract;
 
     /**
-     * @return array<string, class-string<BlockContract>> code => class
+     * All registered blocks, keyed by code.
+     *
+     * @return array<string, class-string<BlockContract>>
      */
     public function all(): array;
 
     /**
-     * @return array<string, string> code => title, for admin selectors
+     * Blocks that may be attached to an owner with the given scope: the
+     * unscoped ones plus those listing the scope. A null scope (an owner
+     * without {@see ScopedBlockOwnerContract}) yields the unscoped blocks.
+     *
+     * @return array<string, class-string<BlockContract>>
+     */
+    public function availableFor(?string $scope): array;
+
+    /**
+     * Selector options of all registered blocks: `code => title`, with the
+     * blocks of a category nested under its label (`category => [code => title]`)
+     * in registration order.
+     *
+     * @return array<string, string|array<string, string>>
      */
     public function options(): array;
+
+    /**
+     * Selector options limited to {@see availableFor()} the scope.
+     *
+     * @return array<string, string|array<string, string>>
+     */
+    public function optionsFor(?string $scope): array;
 }

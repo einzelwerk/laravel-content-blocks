@@ -85,6 +85,18 @@ final class BlockFieldsBuilderTest extends TestCase
     }
 
     #[Test]
+    public function buildsOnlyTheRequestedTypes(): void
+    {
+        $columns = array_map(
+            static fn(FieldContract $field): string => $field->getColumn(),
+            $this->builder->build(null, ['featured_items']),
+        );
+
+        self::assertSame(['content.limit'], $columns);
+        self::assertSame([], $this->builder->build(null, []));
+    }
+
+    #[Test]
     public function appliesCurrentValuesOnlyToTheEditedType(): void
     {
         $block = new ContentBlock([

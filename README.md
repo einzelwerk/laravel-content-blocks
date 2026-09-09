@@ -170,12 +170,48 @@ final class ProductListBlock extends AbstractBlock
 
 This is the building brick for block-driven APIs: the endpoint stays `renderer->render($model, $request)` while editors compose what the page returns.
 
+## Block categories and scopes
+
+Two optional hooks on a block shape the admin type selector:
+
+```php
+final class TourScheduleBlock extends AbstractBlock
+{
+    public function category(): ?string
+    {
+        return 'Tour';          // <optgroup> label in the type selector; null = ungrouped
+    }
+
+    public function scopes(): array
+    {
+        return ['tour'];        // owners the block is offered to; [] = every owner
+    }
+}
+```
+
+An owner narrows the blocks it accepts by implementing `ScopedBlockOwnerContract` — a page model whose `type` column separates plain pages from entity templates, for example:
+
+```php
+class Page extends Model implements ScopedBlockOwnerContract
+{
+    use HasContentBlocks;
+
+    public function blockScope(): ?string
+    {
+        return $this->type;     // 'page' | 'tour' | ...
+    }
+}
+```
+
+The block form lists only the blocks available to the resolved owner (unscoped blocks plus the ones listing the owner's scope), validates `type` against the same set, and builds just their fields. Owners without the contract get the unscoped blocks; when the owner cannot be determined every registered block is offered. `BlockRegistryInterface::availableFor()`, `options()` and `optionsFor()` expose the same logic for custom resources.
+
 ## Extension points
 
 | What | How |
 | --- | --- |
 | Custom model (table name, media, behaviour) | Extend `ContentBlock`, point `content-blocks.model` at the subclass |
 | Replace a packaged/app block | `BlockRegistryInterface::override()` (accidental code collisions throw) |
+| Restrict blocks per owner | `ScopedBlockOwnerContract` on the owner + `BlockContract::scopes()` on the block |
 | Custom admin form mapping | Rebind `BlockFieldsBuilderInterface` |
 | Your own admin resource | Set `content-blocks.moonshine.resource => false`, build on `BlockFieldsBuilderInterface` |
 | Blockable owner selector on the block form | `content-blocks.moonshine.blockable_types` (rendered as a `MorphTo` field) |

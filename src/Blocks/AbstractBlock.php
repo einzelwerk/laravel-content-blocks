@@ -9,6 +9,16 @@ use Ewk\ContentBlocks\Models\ContentBlock;
 
 abstract class AbstractBlock implements BlockContract
 {
+    public function category(): ?string
+    {
+        return null;
+    }
+
+    public function scopes(): array
+    {
+        return [];
+    }
+
     public function rules(): array
     {
         return [];

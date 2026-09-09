@@ -16,6 +16,7 @@ use Ewk\ContentBlocks\MoonShine\Resources\ContentBlocksResource;
 use Ewk\ContentBlocks\Registry\BlockRegistry;
 use Ewk\ContentBlocks\Rendering\BlockRenderer;
 use Ewk\ContentBlocks\Support\BlockContentFilter;
+use Ewk\ContentBlocks\Support\BlockOwnerResolver;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider;
@@ -47,6 +48,7 @@ final class ContentBlocksServiceProvider extends ServiceProvider
         $this->app->singleton(BlockFieldsBuilderInterface::class, BlockFieldsBuilder::class);
         $this->app->singleton(BlockRenderer::class);
         $this->app->singleton(BlockContentFilter::class);
+        $this->app->singleton(BlockOwnerResolver::class);
     }
 
     public function boot(): void
