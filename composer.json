@@ -36,7 +36,7 @@
     "php": ">=8.3",
     "laravel/framework": "^12|^13",
     "moonshine/moonshine": "^4.15",
-    "ewk/moonshine-resource-kit": "^0.1"
+    "ewk/moonshine-resource-kit": "^0.1.1"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.65",

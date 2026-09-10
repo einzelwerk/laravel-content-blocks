@@ -16,10 +16,19 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 trait HasContentBlocks
 {
     /**
+     * Blocks in their admin-defined order: by position, then by key for
+     * rows that share a position (seeded or imported data).
+     *
      * @return MorphMany<ContentBlock, covariant static>
      */
     public function contentBlocks(): MorphMany
     {
-        return $this->morphMany(ContentBlocks::modelClass(), 'blockable');
+        $model = ContentBlocks::modelClass();
+        /** @var ContentBlock $instance */
+        $instance = new $model();
+
+        return $this->morphMany($model, 'blockable')
+            ->orderedBySort()
+            ->orderBy($instance->getQualifiedKeyName());
     }
 }

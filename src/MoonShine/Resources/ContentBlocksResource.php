@@ -14,16 +14,21 @@ use Ewk\MoonShineResourceKit\MoonShine\Concerns\WithActivatable;
 use Ewk\MoonShineResourceKit\MoonShine\Concerns\WithReorderable;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Contracts\Translation\Translator;
+use Closure;
 use MoonShine\Contracts\Core\DependencyInjection\CoreContract;
 use MoonShine\Contracts\Core\PageContract;
 use MoonShine\Contracts\Core\TypeCasts\DataWrapperContract;
 use MoonShine\Laravel\Resources\ModelResource;
 use MoonShine\MenuManager\Attributes\SkipMenu;
+use MoonShine\Support\Enums\SortDirection;
 
 /**
  * CRUD resource for content blocks. Skipped in the menu on purpose: blocks
  * are managed from the owning model's form (e.g. a HasMany field on the
  * page resource), not as a standalone section.
+ *
+ * Lists are ordered by position: MoonShine falls back to `id desc` otherwise,
+ * and the HasMany table would ignore drag & drop reordering entirely.
  *
  * @extends ModelResource<ContentBlock>
  */
@@ -34,6 +39,10 @@ final class ContentBlocksResource extends ModelResource
     use WithReorderable;
 
     protected string $column = 'name';
+
+    protected string $sortColumn = 'sort_order';
+
+    protected SortDirection $sortDirection = SortDirection::ASC;
 
     public function __construct(
         CoreContract $core,
@@ -62,6 +71,22 @@ final class ContentBlocksResource extends ModelResource
             ContentBlockIndexPage::class,
             ContentBlockFormPage::class,
         ];
+    }
+
+    /**
+     * Rows sharing a position keep a stable order.
+     */
+    protected function resolveOrder(string $column, string $direction, ?Closure $callback): static
+    {
+        parent::resolveOrder($column, $direction, $callback);
+
+        $model = $this->getModel();
+
+        if ($column === $model->getSortColumn()) {
+            $this->newQuery()->orderBy($model->getQualifiedKeyName());
+        }
+
+        return $this;
     }
 
     protected function beforeCreating(DataWrapperContract $item): DataWrapperContract
