@@ -7,7 +7,7 @@ namespace Ewk\ContentBlocks\Support;
 use Ewk\ContentBlocks\Contracts\HasContentBlocksContract;
 use Ewk\ContentBlocks\Contracts\ScopedBlockOwnerContract;
 use Ewk\ContentBlocks\Models\ContentBlock;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use MoonShine\Contracts\Core\DependencyInjection\CrudRequestContract;
@@ -25,10 +25,6 @@ use MoonShine\Contracts\Core\DependencyInjection\RequestContract;
  */
 final readonly class BlockOwnerResolver
 {
-    public function __construct(
-        private Container $container,
-    ) {}
-
     public function resolve(?ContentBlock $item, RequestContract $request): ?HasContentBlocksContract
     {
         $owner = $item?->blockable;
@@ -68,16 +64,23 @@ final readonly class BlockOwnerResolver
     /**
      * Embedded HasMany forms are served under the owning resource's route,
      * so the CRUD request resolves the parent resource and its item.
-     * Resolved per call: the resolver is a singleton and must not hold a
-     * request (long-running workers such as Octane).
+     *
+     * Both the container and the request are taken per call: the resolver is
+     * a singleton, and under Octane an injected container would be the
+     * worker's base application rather than the sandbox of the current
+     * request. Resolving the CRUD request through it would store the request
+     * of one HTTP call in the base application, where every later request of
+     * that worker would find it.
      */
     private function fromParentResource(): ?HasContentBlocksContract
     {
-        if (! $this->container->bound(CrudRequestContract::class)) {
+        $container = Container::getInstance();
+
+        if (! $container->bound(CrudRequestContract::class)) {
             return null;
         }
 
-        $request = $this->container->make(CrudRequestContract::class);
+        $request = $container->make(CrudRequestContract::class);
 
         if (! $request->hasResource()) {
             return null;

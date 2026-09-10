@@ -9,7 +9,10 @@ use Ewk\ContentBlocks\Support\BlockOwnerResolver;
 use Ewk\ContentBlocks\Tests\Fixtures\Models\Page;
 use Ewk\ContentBlocks\Tests\Fixtures\Models\ScopedPage;
 use Ewk\ContentBlocks\Tests\Support\TestCase;
+use Illuminate\Container\Container;
 use Illuminate\Http\Request;
+use MoonShine\Contracts\Core\CrudResourceContract;
+use MoonShine\Contracts\Core\DependencyInjection\CrudRequestContract;
 use MoonShine\Contracts\Core\DependencyInjection\RequestContract;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -73,6 +76,38 @@ final class BlockOwnerResolverTest extends TestCase
 
         self::assertTrue($owner instanceof Page && $owner->is($page));
         self::assertNull($this->resolver->scope($owner));
+    }
+
+    /**
+     * Under Octane the resolver is built once per worker while every request
+     * runs in its own container clone, so the parent resource must be read
+     * from the container that is current at call time, not from the one the
+     * resolver was constructed with.
+     */
+    #[Test]
+    public function readsTheParentResourceFromTheCurrentContainer(): void
+    {
+        $page = ScopedPage::query()->create(['title' => 'Tour template', 'scope' => 'tour']);
+
+        $resource = $this->createStub(CrudResourceContract::class);
+        $resource->method('getItem')->willReturn($page);
+
+        $crudRequest = $this->createStub(CrudRequestContract::class);
+        $crudRequest->method('hasResource')->willReturn(true);
+        $crudRequest->method('getResource')->willReturn($resource);
+
+        $current = clone $this->app;
+        $current->instance(CrudRequestContract::class, $crudRequest);
+
+        Container::setInstance($current);
+
+        try {
+            $owner = $this->resolver->resolve(null, $this->request());
+        } finally {
+            Container::setInstance($this->app);
+        }
+
+        self::assertTrue($owner instanceof ScopedPage && $owner->is($page));
     }
 
     /**
